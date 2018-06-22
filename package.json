@@ -1,0 +1,16 @@
+{
+  "name": "dtube-discord-bot",
+  "version": "1.0.0",
+  "description": "The curation bot for dtube",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "wehmoen",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "mysql": "^2.15.0",
+    "steem": "^0.7.1"
+  }
+}
