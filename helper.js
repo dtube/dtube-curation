@@ -90,16 +90,26 @@ database.updateReactions = async (id, reactions) => {
 };
 
 function calculateVote(post) {
-    let base = 2000;
-    base = base + (post.up * 100 * .5);
-    base = base - (post.down * 100 * -1);
-    if (base < config.discord.curation.votes.min) {
-        base = config.discord.curation.votes.min
-    }
-    if (base > config.discord.curation.votes.max) {
-        base = config.discord.curation.votes.max
-    }
-    return base;
+    if (post.one_hundred >= 3)
+        return 10000
+
+    let weight = 0
+
+    // add up all the weights
+    for (let i = 0; i < post.game_die; i++)
+        weight += 100 * (1 + floor(random() * 6));
+    for (let i = 0; i < post.heart; i++)
+        weight += 1500;
+    for (let i = 0; i < post.up; i++)
+        weight += 500;
+    for (let i = 0; i < post.down; i++)
+        weight -= 500;
+
+    // if there is a disagrement, no vote
+    if (weight > 0 && post.down > 0)
+        return 0
+
+    return weight
 }
 
 module.exports = {
@@ -115,23 +125,15 @@ module.exports = {
     },
     calculateVote,
     countReaction: (message) => {
-        let reactions = {up: -1, down: -1};
-        let up = message.reactions.get(config.discord.curation.up);
-        let down = message.reactions.get(config.discord.curation.down);
-        if (up) {
-            reactions.up = reactions.up + up.count;
-        } else {
-            reactions.up = 0;
-        }
+        let reactions = {}
 
-        if (down) {
-            reactions.down = reactions.down + down.count;
-        } else {
-            reactions.down = 0;
-        }
+        for (const key in config.discord.curation.curation_emojis) 
+            reactions[key] = 
+                message.reactions.get(config.discord.curation.curation_emojis[key]) ?
+                message.reactions.get(config.discord.curation.curation_emojis[key]).count
+                : 0
 
         return reactions;
-
     },
     getMinutesSincePost: (posted) => {
         let diff = (new Date()).getTime() - posted.getTime();

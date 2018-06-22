@@ -54,7 +54,6 @@ client.on('message', msg => {
     if (msg.channel.id === config.discord.curation.channel) {
         if (helper.DTubeLink(msg.content)) {
             const link = helper.DTubeLink(msg.content)
-            console.log()
             let video = new Discord.RichEmbed();
             video.setFooter("Powered by d.tube Curation")
                 .setTimestamp();
@@ -76,8 +75,9 @@ client.on('message', msg => {
                         let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
                         if (!exist) {
                             msg.channel.send({embed: video}).then(async (embed) => {
-                                embed.react(config.discord.curation.up);
-                                embed.react(config.discord.curation.down);
+                                // embed.react(config.discord.curation.up);
+                                // embed.react(config.discord.curation.down);
+                                embed.react(config.discord.curation.clock);
                                 helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
                                 setTimeout(() => {
                                     helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
