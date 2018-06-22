@@ -77,8 +77,8 @@ database.existMessage = async (author, permlink) => {
 
 database.updateReactions = async (id, reactions) => {
     return new Promise((resolve, reject) => {
-        let sql = "UPDATE message SET up = ?, down = ? WHERE discord_id = ?";
-        database.query(sql, [reactions.up, reactions.down, id], (err, result) => {
+        let sql = "UPDATE message SET ? WHERE discord_id = " + id;
+        database.query(sql, reactions, (err, result) => {
             if (err) {
                 console.log(err);
                 reject(err);

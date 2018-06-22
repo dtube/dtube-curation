@@ -69,15 +69,12 @@ client.on('message', msg => {
                             .setImage('https://ipfs.io/ipfs/' + json.video.info.snaphash)
                             .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
                             .setThumbnail('https://login.oracle-d.com/' + json.video.info.author + '.jpg')
-                            //.setDescription(json.video.content.description.substr(0, 2048))
                             .addField("Tags", json.tags.join(', '), true)
                             .addField("Uploaded", Math.round(helper.getMinutesSincePost(new Date(result.created+'Z'))) + ' minutes ago', true);
                         let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
                         if (!exist) {
                             msg.channel.send({embed: video}).then(async (embed) => {
-                                // embed.react(config.discord.curation.up);
-                                // embed.react(config.discord.curation.down);
-                                embed.react(config.discord.curation.clock);
+                                embed.react(config.discord.curation.other_emojis.clock);
                                 helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
                                 setTimeout(() => {
                                     helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
