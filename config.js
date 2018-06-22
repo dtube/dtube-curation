@@ -4,8 +4,18 @@ let config = {
         curation: {
             channel: "459485361450778645",
             guild: "451518794335125514",
-            up: "👍",
-            down: "👎",
+            curation_emojis: {
+                up: "👍",
+                down: "👎",
+                one_hundred: "💯",
+                game_die: "🎲",
+                heart: "❤️"
+            },
+            other_emojis: {
+                clock: "⏰",
+                check: "✔️",
+                cross: "❌",
+            },
             votes: {
                 min: 100,
                 max: 3500
