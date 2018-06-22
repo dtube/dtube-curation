@@ -103,8 +103,15 @@ function calculateVote(post) {
 }
 
 module.exports = {
-    isDTubeLink: (str) => {
-        return str.startsWith('https://d.tube');
+    DTubeLink: (str) => {
+        let words = str.split(' ')
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            if (word.startsWith('https://d.tube'))
+                return word
+        }
+        console.log('end')
+        return
     },
     calculateVote,
     countReaction: (message) => {

@@ -52,28 +52,27 @@ client.on('message', msg => {
         return;
     }
     if (msg.channel.id === config.discord.curation.channel) {
-        if (!helper.isDTubeLink(msg.content)) {
-            msg.author.send("You can only send d.tube links to the curation channel!");
-            msg.delete()
-        } else {
+        if (helper.DTubeLink(msg.content)) {
+            const link = helper.DTubeLink(msg.content)
+            console.log()
             let video = new Discord.RichEmbed();
             video.setFooter("Powered by d.tube Curation")
                 .setTimestamp();
-            let authorInformtion = msg.content.replace('/#!', '').replace('https://d.tube/v/', '').split('/');
-            steem.api.getContent(authorInformtion[0], authorInformtion[1], async (err, result) => {
+            let authorInformation = link.replace('/#!', '').replace('https://d.tube/v/', '').split('/');
+            steem.api.getContent(authorInformation[0], authorInformation[1], async (err, result) => {
                 if (err) {
-                    msg.reply("Oups! An error occured. See the logs for more detauls");
+                    msg.reply("Oups! An error occured. See the logs for more details");
                     console.log(err);
                 } else {
                     try {
                         let json = JSON.parse(result.json_metadata);
                         video.setTitle(json.video.info.title.substr(0, 1024))
                             .setImage('https://ipfs.io/ipfs/' + json.video.info.snaphash)
-                            .setAuthor("Video posted by @" + json.video.info.author, null, msg.content)
+                            .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
                             .setThumbnail('https://login.oracle-d.com/' + json.video.info.author + '.jpg')
-                            .setDescription(json.video.content.description.substr(0, 2048))
+                            //.setDescription(json.video.content.description.substr(0, 2048))
                             .addField("Tags", json.tags.join(', '), true)
-                            .addField("Created", result.created, true);
+                            .addField("Uploaded", Math.round(helper.getMinutesSincePost(new Date(result.created+'Z'))) + ' minutes ago', true);
                         let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
                         if (!exist) {
                             msg.channel.send({embed: video}).then(async (embed) => {
