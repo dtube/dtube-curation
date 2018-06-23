@@ -114,12 +114,11 @@ function calculateVote(post) {
 
 function countReaction(message) {
     let reactions = {}
-
-    for (const key in config.discord.curation.curation_emojis) 
-        reactions[key] = 
+    for (const key in config.discord.curation.curation_emojis)
+        reactions[key] =
             message.reactions.get(config.discord.curation.curation_emojis[key]) ?
-            message.reactions.get(config.discord.curation.curation_emojis[key]).count
-            : 0
+                message.reactions.get(config.discord.curation.curation_emojis[key]).count
+                : 0
 
     return reactions;
 }
@@ -150,28 +149,31 @@ module.exports = {
                 .fetchMessage(message.discord_id).then(post => {
                 database.updateReactions(post.id, countReaction(post)).then(async () => {
                     let weight = calculateVote(message);
-                    if (weight == 0)
+                    if (weight === 0) {
                         reject('Weight=0')
-                    console.log('voting', message.author+'/'+message.permlink, weight)
-                    steem.broadcast.vote(
-                        config.steem.wif,
-                        config.steem.account, // Voter
-                        message.author, // Author
-                        message.permlink, // Permlink
-                        weight,
-                        (err, result_bc) => {
-                            if (err) {
-                                console.log(err);
-                                reject(err);
-                            } else {
-                                let sql = "UPDATE message SET voted = 1, vote_weight = ? WHERE author = ? and permlink = ?";
-                                database.query(sql, [weight, message.author, message.permlink], (err, result) => {
-                                    console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink)
-                                    resolve(result_bc);
-                                })
+                    } else {
+                        console.log('voting', message.author + '/' + message.permlink, weight)
+                        steem.broadcast.vote(
+                            config.steem.wif,
+                            config.steem.account, // Voter
+                            message.author, // Author
+                            message.permlink, // Permlink
+                            weight,
+                            (err, result_bc) => {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    let sql = "UPDATE message SET voted = 1, vote_weight = ? WHERE author = ? and permlink = ?";
+                                    database.query(sql, [weight, message.author, message.permlink], (err, result) => {
+                                        console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink)
+                                        resolve(result_bc);
+                                    })
+                                }
                             }
-                        }
-                    );
+                        );
+                    }
+
+
                 })
             });
 
