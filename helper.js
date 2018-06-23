@@ -44,7 +44,10 @@ database.getMessage = async (author, permlink) => {
                 reject(err);
                 console.log(err);
             } else {
-                resolve(result);
+                if (result.length != 1)
+                    resolve(null)
+                else
+                    resolve(result[0]);
             }
         })
     })
@@ -67,11 +70,8 @@ database.getMessages = async () => {
 database.existMessage = async (author, permlink) => {
     let message = await database.getMessage(author, permlink);
     return new Promise((resolve, reject) => {
-        if (message.length === 0) {
-            resolve(false);
-        } else {
-            resolve(true)
-        }
+        if (!message) resolve(false);
+        else resolve(true)
     })
 };
 
@@ -90,7 +90,6 @@ database.updateReactions = async (id, reactions) => {
 };
 
 function calculateVote(post) {
-    console.log(post)
     if (post.one_hundred >= 3)
         return 10000
 
@@ -151,6 +150,8 @@ module.exports = {
                 .fetchMessage(message.discord_id).then(post => {
                 database.updateReactions(post.id, countReaction(post)).then(async () => {
                     let weight = calculateVote(message);
+                    if (weight == 0)
+                        reject('Weight=0')
                     console.log('voting', message.author+'/'+message.permlink, weight)
                     steem.broadcast.vote(
                         config.steem.wif,

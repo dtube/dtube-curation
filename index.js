@@ -23,21 +23,21 @@ client.on('ready', () => {
             })
         })
     
-    setInterval(() => {
-        helper.database.getMessagesToVote().then(messages => {
-            messages.forEach(message => {
-                helper.vote(message, client);
-            })
-        });
-    }, 1000 * 60)
+    // setInterval(() => {
+    //     helper.database.getMessagesToVote().then(messages => {
+    //         messages.forEach(message => {
+    //             helper.vote(message, client);
+    //         })
+    //     });
+    // }, 1000 * 60)
     
-    setTimeout(() => {
-        helper.database.getMessagesToVote().then(messages => {
-            messages.forEach(message => {
-                helper.vote(message, client);
-            })
-        });
-    }, 1000)
+    // setTimeout(() => {
+    //     helper.database.getMessagesToVote().then(messages => {
+    //         messages.forEach(message => {
+    //             helper.vote(message, client);
+    //         })
+    //     });
+    // }, 5 * 1000 * config.discord.curation.timeout_minutes)
 });
 
 client.on('message', msg => {
@@ -69,11 +69,19 @@ client.on('message', msg => {
                         let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
                         if (!exist) {
                             msg.channel.send({embed: video}).then(async (embed) => {
-                                embed.react(config.discord.curation.other_emojis.clock);
-                                setTimeout(() => {
-                                    embed.react(config.discord.curation.other_emojis.cross);
-                                    embed.react(config.discord.curation.other_emojis.check);
-                                }, 5000)
+                                embed.react(config.discord.curation.other_emojis.clock).then(clockReaction => {
+                                    setTimeout(() => {
+                                        clockReaction.remove()
+                                        helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
+                                            helper.vote(message, client).then((tx) => {
+                                                embed.react(config.discord.curation.other_emojis.check);
+                                            }).catch( error => {
+                                                console.error('Vote failed', error)
+                                                embed.react(config.discord.curation.other_emojis.cross);
+                                            })
+                                        })
+                                    }, 60 * 1000 * config.discord.curation.timeout_minutes)
+                                });
                                 helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
                             });
                         } else {
