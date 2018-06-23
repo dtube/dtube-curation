@@ -64,7 +64,7 @@ client.on('message', msg => {
                             .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
                             .setThumbnail('https://login.oracle-d.com/' + json.video.info.author + '.jpg')
                             .setDescription("[Watch Video]("+link+")")
-                            .addField("Tags", json.tags.join(', '), true)
+                            .addField("Tags", json.tags.join(', '))
                             .addField("Uploaded", Math.round(helper.getMinutesSincePost(new Date(result.created+'Z'))) + ' minutes ago', true);
                         let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
                         if (!exist) {
@@ -73,16 +73,29 @@ client.on('message', msg => {
                                     setTimeout(() => {
                                         clockReaction.remove()
                                         helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
-                                            helper.vote(message, client).then((tx) => {
+                                            helper.vote(message, client).then(async (tx) => {
+                                                let msg = await helper.database.getMessage(json.video.info.author, json.video.info.permlink);
                                                 embed.react(config.discord.curation.other_emojis.check);
+                                                video.addField("Vote Weight", (msg.vote_weight/100) + "%", true);
+                                                embed.edit({embed:video})
                                             }).catch( error => {
-                                                console.error('Vote failed', error)
+                                                let errmsg = "An error occured while voting. Please check the logs!";
+                                                try {
+                                                    errmsg = error.cause.data.stack[0].format.split(":")[1]
+                                                } catch (e) {
+
+                                                }
+                                                video.addField("ERROR", errmsg);
+                                                embed.edit({embed:video})
+                                                console.error('Vote failed', )
                                                 embed.react(config.discord.curation.other_emojis.cross);
                                             })
                                         })
                                     }, 60 * 1000 * config.discord.curation.timeout_minutes)
                                 });
                                 helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
+                            }).catch(error=>{
+                                console.log(error)
                             });
                         } else {
                             msg.reply("This video has already been posted to the curation channel.").then(reply => {
@@ -113,3 +126,11 @@ client.on('messageReactionRemove', (reaction, user) => {
 });
 
 client.login(config.discord.token);
+
+process.on('uncaughtException', function (error) {
+    //do nothing
+});
+
+process.on('unhandledRejection', function (error, p) {
+    //do nothing
+});
