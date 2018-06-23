@@ -1,19 +1,19 @@
 let config = {
     discord: {
-        token: "NDUxNTE5MTM4MDI4ODQ3MTE1.Dg2bTQ.MP1xX4vgz2F8Zdshs_xntAorXKM",
+        token: "NDYwMDk4Njk4NzU2NzUxMzcw.Dg_0SA.ox0LCqtnvrru7nEqd40B9CI2wBY",
         curation: {
-            channel: "459485361450778645",
-            guild: "451518794335125514",
+            channel: "459820794273333263",
+            guild: "347020217966395393",
             curation_emojis: {
                 up: "👍",
                 down: "👎",
                 one_hundred: "💯",
                 game_die: "🎲",
-                heart: "❤️"
+                heart: '❤'
             },
             other_emojis: {
                 clock: "⏰",
-                check: "✔️",
+                check: "✅",
                 cross: "❌",
             },
             votes: {
