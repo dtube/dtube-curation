@@ -90,6 +90,7 @@ database.updateReactions = async (id, reactions) => {
 };
 
 function calculateVote(post) {
+    console.log(post)
     if (post.one_hundred >= 3)
         return 10000
 
@@ -97,7 +98,7 @@ function calculateVote(post) {
 
     // add up all the weights
     for (let i = 0; i < post.game_die; i++)
-        weight += 100 * (1 + floor(random() * 6));
+        weight += 100 * (1 + Math.floor(Math.random() * 6));
     for (let i = 0; i < post.heart; i++)
         weight += 1500;
     for (let i = 0; i < post.up; i++)
@@ -112,6 +113,18 @@ function calculateVote(post) {
     return weight
 }
 
+function countReaction(message) {
+    let reactions = {}
+
+    for (const key in config.discord.curation.curation_emojis) 
+        reactions[key] = 
+            message.reactions.get(config.discord.curation.curation_emojis[key]) ?
+            message.reactions.get(config.discord.curation.curation_emojis[key]).count
+            : 0
+
+    return reactions;
+}
+
 module.exports = {
     DTubeLink: (str) => {
         let words = str.split(' ')
@@ -120,27 +133,15 @@ module.exports = {
             if (word.startsWith('https://d.tube'))
                 return word
         }
-        console.log('end')
         return
     },
     calculateVote,
-    countReaction: (message) => {
-        let reactions = {}
-
-        for (const key in config.discord.curation.curation_emojis) 
-            reactions[key] = 
-                message.reactions.get(config.discord.curation.curation_emojis[key]) ?
-                message.reactions.get(config.discord.curation.curation_emojis[key]).count
-                : 0
-
-        return reactions;
-    },
+    countReaction,
     getMinutesSincePost: (posted) => {
         let diff = (new Date()).getTime() - posted.getTime();
         return (diff / 60000);
     },
-    vote: async (author, permlink, client) => {
-        let message = await database.getMessage(author, permlink)[0];
+    vote: async (message, client) => {
         return new Promise((resolve, reject) => {
             client
                 .guilds
@@ -148,14 +149,14 @@ module.exports = {
                 .channels
                 .get(config.discord.curation.channel)
                 .fetchMessage(message.discord_id).then(post => {
-                helper.database.updateReactions(post.id, helper.countReaction(post)).then(async () => {
-                    message = await database.getMessage(author, permlink)[0];
+                database.updateReactions(post.id, countReaction(post)).then(async () => {
                     let weight = calculateVote(message);
+                    console.log('voting', message.author+'/'+message.permlink, weight)
                     steem.broadcast.vote(
                         config.steem.wif,
                         config.steem.account, // Voter
-                        author, // Author
-                        permlink, // Permlink
+                        message.author, // Author
+                        message.permlink, // Permlink
                         weight,
                         (err, result_bc) => {
                             if (err) {
@@ -163,8 +164,8 @@ module.exports = {
                                 reject(err);
                             } else {
                                 let sql = "UPDATE message SET voted = 1, vote_weight = ? WHERE author = ? and permlink = ?";
-                                database.query(sql, [weight, author, permlink], (err, result) => {
-                                    console.log("Voted with " + (weight / 100) + "% for @" + author + '/' + permlink)
+                                database.query(sql, [weight, message.author, message.permlink], (err, result) => {
+                                    console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink)
                                     resolve(result_bc);
                                 })
                             }

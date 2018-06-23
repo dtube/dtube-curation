@@ -7,29 +7,6 @@ const helper = require('./helper');
 
 let scheduledVotes = [];
 
-helper.database.getMessagesToVote().then(posts => {
-    posts.forEach(post => {
-        let sincePost = helper.getMinutesSincePost(post.posted);
-        let startIn = 30 - sincePost;
-        let voteNow = [];
-        if (startIn <= 0) {
-            voteNow.push(post);
-        } else {
-            scheduledVotes.push({
-                post, timer: setTimeout(() => {
-                    helper.vote(post.author, post.permlink, helper.calculateVote(post));
-                }, startIn * 60 * 1000)
-            })
-        }
-        for (let i = 0; i <= voteNow.length - 1; i++) {
-            setTimeout(() => {
-                helper.vote(voteNow[i].author, voteNow[i].permlink, helper.calculateVote(voteNow[i]));
-            }, i * 3500)
-        }
-
-    })
-})
-
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -45,6 +22,22 @@ client.on('ready', () => {
                 helper.database.updateReactions(message[0], helper.countReaction(message[1]));
             })
         })
+    
+    setInterval(() => {
+        helper.database.getMessagesToVote().then(messages => {
+            messages.forEach(message => {
+                helper.vote(message, client);
+            })
+        });
+    }, 1000 * 60)
+    
+    setTimeout(() => {
+        helper.database.getMessagesToVote().then(messages => {
+            messages.forEach(message => {
+                helper.vote(message, client);
+            })
+        });
+    }, 1000)
 });
 
 client.on('message', msg => {
@@ -65,22 +58,23 @@ client.on('message', msg => {
                 } else {
                     try {
                         let json = JSON.parse(result.json_metadata);
+                        json.tags.splice(4)
                         video.setTitle(json.video.info.title.substr(0, 1024))
                             .setImage('https://ipfs.io/ipfs/' + json.video.info.snaphash)
                             .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
                             .setThumbnail('https://login.oracle-d.com/' + json.video.info.author + '.jpg')
+                            .setDescription("[Watch Video]("+link+")")
                             .addField("Tags", json.tags.join(', '), true)
                             .addField("Uploaded", Math.round(helper.getMinutesSincePost(new Date(result.created+'Z'))) + ' minutes ago', true);
                         let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
                         if (!exist) {
                             msg.channel.send({embed: video}).then(async (embed) => {
                                 embed.react(config.discord.curation.other_emojis.clock);
-                                helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
                                 setTimeout(() => {
-                                    helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
-                                        helper.vote(message[0].author, message[0].permlink, helper.calculateVote(message[0]));
-                                    });
-                                }, 1000 * config.discord.curation.timeout_minutes)
+                                    embed.react(config.discord.curation.other_emojis.cross);
+                                    embed.react(config.discord.curation.other_emojis.check);
+                                }, 5000)
+                                helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
                             });
                         } else {
                             msg.reply("This video has already been posted to the curation channel.").then(reply => {
