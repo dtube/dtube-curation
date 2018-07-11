@@ -37,9 +37,9 @@ let config = {
         enabled: true,
         group_name: "mods",
         faq: {
-            "error": [
-                "I'm getting an ERROR when trying to upload a video, what do?",
-                "Log out of DTube, Clear your Cookies/Cache in your web browser, Log back into DTube with your Steemit \"Posting Key\""
+            "error": [ // the key. Usage like !faq error
+                "I'm getting an ERROR when trying to upload a video, what do?", // the displayed question
+                "Log out of DTube, Clear your Cookies/Cache in your web browser, Log back into DTube with your Steemit \"Posting Key\"" // and the displayed answer
             ],
             "error2": [
                 "I'm getting another strange ERROR, What could be wrong?",
