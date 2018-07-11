@@ -120,7 +120,7 @@ client.on('message', msg => {
         }
     }
     
-    if (msg.content.startsWith('!faq')) {
+    if (msg.content.startsWith('!faq') && config.mod_settings.enabled === true) {
         let faq = msg.content.replace('!faq', '').trim();
         if (faq.length > 0) {
             if (faq === 'list') {
