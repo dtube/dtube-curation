@@ -64,9 +64,8 @@ client.on('message', msg => {
                         } else {
                             json.tags.splice(4)
                             video.setTitle(json.video.info.title.substr(0, 1024))
-                                .setImage('https://ipfs.io/ipfs/' + json.video.info.snaphash)
                                 .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
-                                .setThumbnail('https://login.oracle-d.com/' + json.video.info.author + '.jpg')
+                                .setThumbnail('https://snap1.d.tube/ipfs/' + json.video.info.snaphash)
                                 .setDescription("[Watch Video](" + link + ")")
                                 .addField("Tags", json.tags.join(', '))
                                 .addField("Uploaded", posted_ago + ' minutes ago', true);
