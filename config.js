@@ -1,10 +1,10 @@
 let config = {
     discord: {
-        token: "NDYwMDk4Njk4NzU2NzUxMzcw.Dg_0SA.ox0LCqtnvrru7nEqd40B9CI2wBY",
+        token: "MY_SUPER_SECRET_BOT_TOKEN",
         curation: {
-            channel: "459820794273333263",
-            guild: "347020217966395393",
-            curation_emojis: {
+            channel: "459820794273333263", // the channel where the curation takes place
+            guild: "347020217966395393", // the guild where the curation takes place
+            curation_emojis: { // this emojis are used by the bot to calculate the vote
                 up: "👍",
                 down: "👎",
                 one_hundred: "💯",
@@ -12,15 +12,15 @@ let config = {
                 heart: '❤'
             },
             other_emojis: {
-                clock: "⏰",
-                check: "✅",
-                cross: "❌",
+                clock: "⏰", // waiting for curators to add reactions
+                check: "✅", // voted
+                cross: "❌", // not voted
             },
             votes: {
                 min: 100,
                 max: 3500
             },
-            timeout_minutes: 15
+            timeout_minutes: 15 // wait x minutes after posting until the bot votes
         }
     },
     steem: {
@@ -30,7 +30,7 @@ let config = {
     database: {
         host: "localhost",
         user: "root",
-        password: "Yesowuhixu",
+        password: "1234",
         database: "dtube"
     },
     mod_settings: {
