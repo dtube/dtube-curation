@@ -78,7 +78,7 @@ let config = {
                 "DTube upvotes are not guaranteed to anyone. We suggest posting quality videos to DTube on a regular basis. This will better your chance at our curators seeing them. If we miss your video, it does NOT reflect on you as an artist and suggest becoming a daily video contributor to the platform."
             ],
             "beneficiary": [
-                "Does DTube take 25% of our Author Rewards?",
+                "Does DTube take 10% of our Author Rewards?",
                 "No, we actually give back all Beneficiary Rewards earned via the @dtube.rewards account to both the Author and Curators. So upvote your favorite creators daily to start earning today! You will also get the Bid Bot Reward also!"
             ],
             "playback_error": [
