@@ -1,6 +1,13 @@
+var token = process.env.token || 'MY_SUPER_SECRET_BOT_TOKEN'
+var wif = process.env.wif || '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg'
+var account = process.env.account || 'guest123'
+var db_addr = process.env.db_addr || 'localhost'
+var db_user = process.env.db_user || 'root'
+var db_pass = process.env.db_pass || ''
+
 let config = {
     discord: {
-        token: "MY_SUPER_SECRET_BOT_TOKEN",
+        token: token,
         curation: {
             channel: "459820794273333263", // the channel where the curation takes place
             guild: "347020217966395393", // the guild where the curation takes place
@@ -24,13 +31,13 @@ let config = {
         }
     },
     steem: {
-        wif: "5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg",
-        account: "guest123"
+        wif: wif,
+        account: account
     },
     database: {
-        host: "localhost",
-        user: "root",
-        password: "1234",
+        host: db_addr,
+        user: db_user,
+        password: db_pass,
         database: "dtube"
     },
     mod_settings: {
@@ -78,8 +85,8 @@ let config = {
                 "DTube upvotes are not guaranteed to anyone. We suggest posting quality videos to DTube on a regular basis. This will better your chance at our curators seeing them. If we miss your video, it does NOT reflect on you as an artist and suggest becoming a daily video contributor to the platform."
             ],
             "beneficiary": [
-                "Does DTube take 10% of our Author Rewards?",
-                "No, we actually give back all Beneficiary Rewards earned via the @dtube.rewards account to both the Author and Curators. So upvote your favorite creators daily to start earning today! You will also get the Bid Bot Reward also!"
+                "Does DTube take 25% of our Author Rewards?",
+                "no, DTube currently takes 10%, previously DTube took more and used it to directly reward curators, this program has now ended"
             ],
             "playback_error": [
                 "Why can't I view my newly uploaded video?",
