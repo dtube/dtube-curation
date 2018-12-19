@@ -1,9 +1,20 @@
+var token = process.env.token || 'MY_SUPER_SECRET_BOT_TOKEN'
+var wif = process.env.wif || '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg'
+var account = process.env.account || 'guest123'
+var db_addr = process.env.db_addr || 'localhost'
+var db_user = process.env.db_user || 'root'
+var db_pass = process.env.db_pass || ''
+var db_database = process.env.db_database || 'dtube'
+var channel = process.env.channel || '459820794273333263'
+var guild = process.env.guild || '347020217966395393'
+
+
 let config = {
     discord: {
-        token: "MY_SUPER_SECRET_BOT_TOKEN",
+        token: token,
         curation: {
-            channel: "459820794273333263", // the channel where the curation takes place
-            guild: "347020217966395393", // the guild where the curation takes place
+            channel: channel, // the channel where the curation takes place
+            guild: guild, // the guild where the curation takes place
             curation_emojis: { // this emojis are used by the bot to calculate the vote
                 up: "👍",
                 down: "👎",
@@ -24,14 +35,14 @@ let config = {
         }
     },
     steem: {
-        wif: "5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg",
-        account: "guest123"
+        wif: wif,
+        account: account
     },
     database: {
-        host: "localhost",
-        user: "root",
-        password: "1234",
-        database: "dtube"
+        host: db_addr,
+        user: db_user,
+        password: db_pass,
+        database: db_database
     },
     mod_settings: {
         enabled: true,
