@@ -1,6 +1,6 @@
 FROM node:latest
 LABEL "project.home"="https://github.com/dtube/dtube-curation"
-RUN git clone https://github.com/dtube/dtube-curation
+RUN git clone https://github.com/nannal/dtube-curation
 WORKDIR /dtube-curation
 RUN npm install
 
@@ -10,5 +10,5 @@ ENV account 'guest123'
 ENV db_addr 'localhost'
 ENV db_user 'root'
 ENV db_pass ''
-
+ENV db_database 'dtube'
 CMD ["node", "index.js"]
