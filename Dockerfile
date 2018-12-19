@@ -11,4 +11,7 @@ ENV db_addr 'localhost'
 ENV db_user 'root'
 ENV db_pass ''
 ENV db_database 'dtube'
+ENV guild '347020217966395393'
+ENV channel '459820794273333263'
+
 CMD ["node", "index.js"]
