@@ -5,8 +5,8 @@ var db_addr = process.env.db_addr || 'localhost'
 var db_user = process.env.db_user || 'root'
 var db_pass = process.env.db_pass || ''
 var db_database = process.env.db_database || 'dtube'
-var db_channel = process.env.channel || '459820794273333263'
-var db_guild = process.env.guild || '347020217966395393'
+var channel = process.env.channel || '459820794273333263'
+var guild = process.env.guild || '347020217966395393'
 
 
 let config = {
