@@ -89,6 +89,35 @@ database.updateReactions = async (id, reactions) => {
     })
 };
 
+database.feedBackExist = async (author, permlink) => {
+    return new Promise((resolve, reject) => {
+        let sql = "SELECT * from feedback where author = ? and permlink = ?";
+        database.query(sql, [author, permlink], (err, result) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        })
+    });
+};
+
+database.addFeedback = async (from, msg, author, permlink) => {
+    let sql = "INSERT INTO feedback (discord,message,author,permlink) VALUES (?,?,?,?)";
+    return new Promise((resolve, reject) => {
+
+        database.query(sql, [from, msg, author, permlink], (err, result) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve(true);
+            }
+        })
+    });
+};
+
 function calculateVote(post) {
     if (post.one_hundred >= 3)
         return 10000
