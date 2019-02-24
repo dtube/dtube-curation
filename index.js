@@ -27,7 +27,7 @@ client.on('ready', () => {
     //     helper.database.getMessagesToVote().then(messages => {
     //         messages.forEach(message => {
     //             helper.vote(message, client);
-    //         })!
+    //         })
     //     });
     // }, 1000 * 60)
 
@@ -45,6 +45,7 @@ client.on('message', msg => {
         return;
     }
     if (msg.channel.id === config.discord.curation.channel) {
+        console.log(msg.content)
         if (msg.content.startsWith("!feedback")) {
             let parts = msg.content.replace("!feedback").trim().split(" ").slice(1);
             if (parts.length >= 2) {
@@ -75,7 +76,7 @@ client.on('message', msg => {
                                 let video = new Discord.RichEmbed();
                                 video.setFooter("Powered by d.tube Curation")
                                     .setTimestamp()
-                                    .setTitle("Feedback for: @" + exist[0].author + '/' + exist[0].permlink)
+                                    .setTitle("Feedback for: @" + json.video.info.author + '/' + json.video.info.permlink)
                                     .setAuthor("@" + json.video.info.author, 'https://login.oracle-d.com/' + json.video.info.author + '.jpg', "https://d.tube/#!/c/" + json.video.info.author)
                                     .setThumbnail('https://snap1.d.tube/ipfs/' + json.video.info.snaphash)
                                     .setDescription("[Watch Video](" + link + ")")
