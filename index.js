@@ -7,6 +7,7 @@ const config = require('./config');
 const helper = require('./helper');
 
 client.on('ready', () => {
+
     console.log(`Logged in as ${client.user.tag}!`);
     client
         .guilds
@@ -21,6 +22,10 @@ client.on('ready', () => {
             })
         })
 });
+
+function countCurators() {
+    return client.guilds.get(config.discord.curation.guild).channels.get(config.discord.curation.channel).permissionOverwrites.filter(x => x.type === 'member').array().length
+}
 
 async function getSP(account) {
     let sp = await steem.api.getAccountsAsync([account]);
@@ -121,7 +126,7 @@ client.on('message', msg => {
             user = "dtube"
         }
 
-        console.log("next")
+        console.log("next");
 
         steem.api.getAccounts([user], (err, res) => {
             if (err || res.length === 0) {
@@ -145,7 +150,7 @@ client.on('message', msg => {
                                         status.setColor(0x0878e0);
                                         if (user === "dtube") {
                                             status.addField("Total Curated Videos:", count[0].count, true);
-                                            status.addField("Total Number of Curators:", curators[0].count, true);
+                                            status.addField("Total Number of Curators:", countCurators(), true);
                                         }
 
                                         status.addField("Current 100% Vote Value:", vote_value + "$", true);
@@ -153,11 +158,11 @@ client.on('message', msg => {
                                         status.addField("Current Voting Power:", vp.toFixed(2) + "%", true);
 
                                         if (blacklist.count > 0 && !team.includes(user)) {
-                                            status.addField("Blacklisted:",blacklist.text);
+                                            status.addField("Blacklisted:", blacklist.text);
                                         }
 
                                         if (team.includes(user)) {
-                                            status.addField("DTube Team Member:","Yes 🤟");
+                                            status.addField("DTube Team Member:", "Yes 🤟");
                                         }
                                         msg.channel.send(status)
                                     });
@@ -174,7 +179,7 @@ client.on('message', msg => {
     }
 
     if (msg.channel.id === config.discord.curation.channel) {
-        console.log(msg.content)
+        console.log(msg.content);
 
         if (msg.content === "!vp") {
             getvotingpower("dtube").then(vp => {
@@ -193,8 +198,8 @@ client.on('message', msg => {
                     let authorInformation = video.replace('/#!', '').replace('https://d.tube/v/', '').split('/');
                     helper.database.feedBackExist(authorInformation[0], authorInformation[1]).then(exist => {
                         if (exist.length !== 0) {
-                            console.log(exist[0].discord)
-                            let user = client.guilds.get(config.discord.curation.guild).members.get(exist[0].discord)
+                            console.log(exist[0].discord);
+                            let user = client.guilds.get(config.discord.curation.guild).members.get(exist[0].discord);
                             let video = new Discord.RichEmbed();
                             video.setFooter("Powered by d.tube Curation 🦄")
                                 .setTimestamp()
@@ -208,7 +213,7 @@ client.on('message', msg => {
                             steem.api.getContent(authorInformation[0], authorInformation[1], async (err, result) => {
                                 let json = JSON.parse(result.json_metadata);
                                 let posted_ago = Math.round(helper.getMinutesSincePost(new Date(result.created + 'Z')));
-                                console.log(json.video)
+                                console.log(json.video);
                                 let video = new Discord.RichEmbed();
                                 video.setFooter("Powered by d.tube Curation 🦄")
                                     .setTimestamp()
@@ -231,11 +236,11 @@ client.on('message', msg => {
                                         helper.database.addFeedback(msg.author.id, feedback, authorInformation[0], authorInformation[1]).then(() => {
                                             embed.edit({embed: video})
                                         }).catch(() => {
-                                            video.addField("Info", "Something went wrong while saving this feedback to the database. Please manually verify that the feedback was posted.")
+                                            video.addField("Info", "Something went wrong while saving this feedback to the database. Please manually verify that the feedback was posted.");
                                             embed.edit({embed: video})
                                         })
                                     } catch (e) {
-                                        video.addField("Info", "Something went wrong while broadcasting the feedback to the blockchain. Please manually verify that the feedback was posted. If not try again. If this still does not work: Don't panic. Contact <@356200653640695811>")
+                                        video.addField("Info", "Something went wrong while broadcasting the feedback to the blockchain. Please manually verify that the feedback was posted. If not try again. If this still does not work: Don't panic. Contact <@356200653640695811>");
                                         embed.edit({embed: video})
                                     }
 
@@ -251,8 +256,8 @@ client.on('message', msg => {
                     let authorInformation = video.replace('/#!', '').replace('https://d.tube/v/', '').split('/');
                     helper.database.feedBackExist(authorInformation[0], authorInformation[1]).then(exist => {
                         if (exist.length === 1) {
-                            console.log(exist[0].discord)
-                            let user = client.guilds.get(config.discord.curation.guild).members.get(exist[0].discord)
+                            console.log(exist[0].discord);
+                            let user = client.guilds.get(config.discord.curation.guild).members.get(exist[0].discord);
                             let video = new Discord.RichEmbed();
                             video.setFooter("Powered by d.tube Curation 🦄")
                                 .setTimestamp()
@@ -272,7 +277,7 @@ client.on('message', msg => {
 
         } else {
             if (helper.DTubeLink(msg.content)) {
-                const link = helper.DTubeLink(msg.content)
+                const link = helper.DTubeLink(msg.content);
                 let video = new Discord.RichEmbed();
                 video.setFooter("Powered by d.tube Curation 🦄")
                     .setTimestamp();
@@ -288,7 +293,7 @@ client.on('message', msg => {
                             if (posted_ago > 2880) {
                                 msg.channel.send("This post is too old for curation through d.tube");
                             } else {
-                                json.tags.splice(4)
+                                json.tags.splice(4);
                                 video.setTitle(json.video.info.title.substr(0, 1024))
                                     .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
                                     .setThumbnail('https://snap1.d.tube/ipfs/' + json.video.info.snaphash)
@@ -301,7 +306,7 @@ client.on('message', msg => {
                                     msg.channel.send({embed: video}).then(async (embed) => {
                                         embed.react(config.discord.curation.other_emojis.clock).then(clockReaction => {
                                             setTimeout(() => {
-                                                clockReaction.remove()
+                                                clockReaction.remove();
                                                 helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
                                                     helper.vote(message, client).then(async (tx) => {
                                                         let msg = await helper.database.getMessage(json.video.info.author, json.video.info.permlink);
@@ -316,8 +321,8 @@ client.on('message', msg => {
 
                                                         }
                                                         video.addField("ERROR", errmsg);
-                                                        embed.edit({embed: video})
-                                                        console.error('Vote failed',)
+                                                        embed.edit({embed: video});
+                                                        console.error('Vote failed',);
                                                         embed.react(config.discord.curation.other_emojis.cross);
                                                     })
                                                 })
