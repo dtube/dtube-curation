@@ -67,6 +67,35 @@ database.getMessages = async () => {
     })
 };
 
+database.countMessages = async () => {
+    return new Promise((resolve, reject) => {
+        let sql = "SELECT Count(id) as count FROM message";
+        database.query(sql, (err, result) => {
+            if (err) {
+                reject(err);
+                console.log(err);
+            } else {
+                resolve(result);
+            }
+        })
+    })
+};
+
+database.countCurators = async () => {
+    return new Promise((resolve, reject) => {
+        let sql = "SELECT Count(DISTINCT(discord_id)) as count FROM message";
+        database.query(sql, (err, result) => {
+            if (err) {
+                reject(err);
+                console.log(err);
+            } else {
+                resolve(result);
+            }
+        })
+    })
+};
+
+
 database.existMessage = async (author, permlink) => {
     let message = await database.getMessage(author, permlink);
     return new Promise((resolve, reject) => {
