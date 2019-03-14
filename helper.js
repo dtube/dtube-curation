@@ -25,6 +25,20 @@ database.addMessage = async (id, author, permlink) => {
     })
 };
 
+database.getMessageSummary = async(days) => {
+    return new Promise((resolve, reject) => {
+        let sql = "select Count(id) as count, posted from message m WHERE m.posted > NOW() - INTERVAL ? DAY GROUP BY Day(m.posted);";
+        database.query(sql,[days], (err, result) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve(result.reverse());
+            }
+        })
+    })
+};
+
 database.getMessagesToVote = async () => {
     return new Promise((resolve, reject) => {
         let sql = "SELECT * FROM message WHERE voted = 0";
@@ -37,7 +51,7 @@ database.getMessagesToVote = async () => {
             }
         })
     })
-}
+};
 
 database.getMessage = async (author, permlink) => {
     return new Promise((resolve, reject) => {
@@ -48,7 +62,7 @@ database.getMessage = async (author, permlink) => {
                 console.log(err);
             } else {
                 if (result.length != 1)
-                    resolve(null)
+                    resolve(null);
                 else
                     resolve(result[0]);
             }
@@ -97,7 +111,6 @@ database.countCurators = async () => {
         })
     })
 };
-
 
 database.existMessage = async (author, permlink) => {
     let message = await database.getMessage(author, permlink);
@@ -152,9 +165,9 @@ database.addFeedback = async (from, msg, author, permlink) => {
 
 function calculateVote(post) {
     if (post.one_hundred >= 3)
-        return 10000
+        return 10000;
 
-    let weight = 0
+    let weight = 0;
 
     // add up all the weights
     for (let i = 0; i < post.game_die; i++)
@@ -168,31 +181,31 @@ function calculateVote(post) {
 
     // if there is a disagrement, no vote
     if (weight > 0 && post.down > 0)
-        return 0
+        return 0;
 
     return weight
 }
 
 function countReaction(message) {
-    let reactions = {}
+    let reactions = {};
     for (const key in config.discord.curation.curation_emojis)
         reactions[key] =
             message.reactions.get(config.discord.curation.curation_emojis[key]) ?
                 message.reactions.get(config.discord.curation.curation_emojis[key]).count
-                : 0
+                : 0;
 
     return reactions;
 }
 
 module.exports = {
     DTubeLink: (str) => {
-        let words = str.split(' ')
+        let words = str.split(' ');
         for (let i = 0; i < words.length; i++) {
             const word = words[i];
             if (word.startsWith('https://d.tube'))
                 return word
         }
-        return
+
     },
     calculateVote,
     countReaction,
@@ -213,7 +226,7 @@ module.exports = {
                     if (weight === 0) {
                         reject('Weight=0')
                     } else {
-                        console.log('voting', message.author + '/' + message.permlink, weight)
+                        console.log('voting', message.author + '/' + message.permlink, weight);
                         steem.broadcast.vote(
                             config.steem.wif,
                             config.steem.account, // Voter
@@ -226,7 +239,7 @@ module.exports = {
                                 } else {
                                     let sql = "UPDATE message SET voted = 1, vote_weight = ? WHERE author = ? and permlink = ?";
                                     database.query(sql, [weight, message.author, message.permlink], (err, result) => {
-                                        console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink)
+                                        console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink);
                                         resolve(result_bc);
                                     })
                                 }

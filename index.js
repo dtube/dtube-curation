@@ -2,6 +2,8 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const steem = require("steem");
 const fetch = require("node-fetch");
+const ChartjsNode = require('chartjs-node');
+const chartNode = new ChartjsNode(720, 720 * .5);
 
 const config = require('./config');
 const helper = require('./helper');
@@ -22,6 +24,69 @@ client.on('ready', () => {
             })
         })
 });
+
+function buildCurationTable(DB_RESULT) {
+    DB_RESULT = DB_RESULT.reverse();
+    let data = [
+        '```+--------+---------+',
+        '|Videos  |Date     |',
+        '+------------------+',
+
+    ];
+
+    for (let i = 0; i < DB_RESULT.length; i++) {
+        data.push("|" +
+            DB_RESULT[i].count +
+            " ".repeat(8 - DB_RESULT[i].count.toString().length) + "|" +
+            (new Date(DB_RESULT[i].posted)).toLocaleDateString("en-US") +
+            " ".repeat(9 - (new Date(DB_RESULT[i].posted)).toLocaleDateString("en-US").length ) +
+            "|"
+        );
+    }
+
+    data.push('+--------+---------+```');
+    return data.join("\n");
+}
+
+function createChartOptions(DB_RESULT) {
+    DB_RESULT = DB_RESULT.reverse();
+    return {
+        type: 'line',
+        data: {
+            labels: DB_RESULT.map(x => (new Date(x.posted)).toLocaleDateString("en-US")),
+            datasets: [{
+                label: 'Daily Curated Videos',
+                data: DB_RESULT.map(x => x.count),
+                borderColor: [
+                    'rgba(255,255,255,1)'
+                ],
+                backgroundColor: [
+                    'rgba(245,245,245,0.4)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            legend: {
+                labels: {
+                    fontColor: "white"
+                }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        fontColor: "#FFF",
+                        beginAtZero: true
+                    }
+                }], xAxes: [{
+                    ticks: {
+                        fontColor: "#FFF"
+                    }
+                }]
+            }
+        }
+    }
+}
 
 function countCurators() {
     return client.guilds.get(config.discord.curation.guild).channels.get(config.discord.curation.channel).permissionOverwrites.filter(x => x.type === 'member').array().length
@@ -126,8 +191,6 @@ client.on('message', msg => {
             user = "dtube"
         }
 
-        console.log("next");
-
         steem.api.getAccounts([user], (err, res) => {
             if (err || res.length === 0) {
                 msg.reply(user + " seems not to be a valid Steem account");
@@ -179,7 +242,34 @@ client.on('message', msg => {
     }
 
     if (msg.channel.id === config.discord.curation.channel) {
-        console.log(msg.content);
+
+        if (msg.content.startsWith("!chart")) {
+            let days = parseInt(msg.content.replace("!chart","").trim());
+            if (isNaN(days)) {
+                days = 7
+            }
+            if (days < 1 || days > 14) {
+                days = 7
+            }
+
+            helper.database.getMessageSummary(days).then(data => {
+                chartNode.drawChart(createChartOptions(data))
+                    .then(() => {
+                        return chartNode.getImageBuffer('image/png');
+                    })
+                    .then(buffer => {
+                        return chartNode.getImageStream('image/png');
+                    })
+                    .then(streamResult => {
+                        return chartNode.writeImageToFile('image/png', './statistics.png');
+                    })
+                    .then(() => {
+                        msg.channel.send(buildCurationTable(data), {files: ["./statistics.png"]}).then(() => {
+                            console.log("CHECK")
+                        })
+                    });
+            })
+        }
 
         if (msg.content === "!vp") {
             getvotingpower("dtube").then(vp => {
