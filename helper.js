@@ -6,6 +6,9 @@ let database = require('mysql').createConnection(config.database);
 database.connect((err) => {
     if (err) throw err;
     console.log("Database connection etablished!");
+    database.query("set session sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';", () => {
+        console.log("Initialized Database")
+    })
 });
 
 database.addMessage = async (id, author, permlink) => {
