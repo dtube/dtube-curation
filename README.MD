@@ -13,6 +13,17 @@ To run this bot you need nodeJS and a MySQL database.
     cd dtube-curation
     npm install
     
+To generate the charts you need to install some packages:
+
+OS | Command
+----- | -----
+OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg`
+Ubuntu | `sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
+Fedora | `sudo yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel`
+Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
+OpenBSD | `doas pkg_add cairo pango png jpeg giflib`
+
+    
 ### Database Setup
 
 Create a new database and import the `dump.sql` file.
