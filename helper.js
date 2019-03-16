@@ -176,12 +176,18 @@ function calculateVote(post) {
         weight += 1500;
     for (let i = 0; i < post.up; i++)
         weight += 500;
+    for (let i = 0; i < post.unicorn; i++)
+        weight += 2500;
     for (let i = 0; i < post.down; i++)
         weight -= 500;
 
     // if there is a disagrement, no vote
     if (weight > 0 && post.down > 0)
         return 0;
+
+    if (weight > 10000) {
+        weight = 10000;
+    }
 
     return weight
 }

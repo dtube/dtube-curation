@@ -20,6 +20,7 @@ let config = {
                 down: "👎",
                 one_hundred: "💯",
                 game_die: "🎲",
+                unicorn: "🦄",
                 heart: '❤'
             },
             other_emojis: {
@@ -110,6 +111,6 @@ let config = {
             ]
         }
     }
-}
+};
 
-module.exports = config
+module.exports = config;

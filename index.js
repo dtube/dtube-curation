@@ -39,7 +39,7 @@ function buildCurationTable(DB_RESULT) {
             DB_RESULT[i].count +
             " ".repeat(8 - DB_RESULT[i].count.toString().length) + "|" +
             (new Date(DB_RESULT[i].posted)).toLocaleDateString("en-US") +
-            " ".repeat(9 - (new Date(DB_RESULT[i].posted)).toLocaleDateString("en-US").length ) +
+            " ".repeat(9 - (new Date(DB_RESULT[i].posted)).toLocaleDateString("en-US").length) +
             "|"
         );
     }
@@ -243,8 +243,27 @@ client.on('message', msg => {
 
     if (msg.channel.id === config.discord.curation.channel) {
 
+        if (msg.content === "!help") {
+            let video = new Discord.RichEmbed();
+            video.setFooter("Powered by d.tube Curation 🦄");
+            video.setTitle("Curation Emojis Overview");
+            video.setThumbnail("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/155/unicorn-face_1f984.png");
+
+            video.addField("👎", "Removes 5% from the upvote", true);
+            video.addField("👍", "Adds 5% to the upvote", true);
+            video.addField("🎲", "Adds between 1% and 6% to the upvote", true);
+            video.addField("❤", "Adds 15% to the upvote", true);
+            video.addField("🦄", "Adds 25% to the upvote", true);
+            video.addField("💯", "Grants a 100% if at least three curators react with it.", false);
+
+            video.setDescription("Post any DTube link into the <#"+config.discord.curation.channel+"> channel. You can not curate videos older than 2 hours. Do not upvote videos talking about EOS. Do not upvote religious / violent / hate speech / etc content. Do not upvote promotional videos. To curate add the emotes shown above. You may add more than one emote. For questions ask Steeminator3000");
+
+            msg.channel.send(video);
+
+        }
+
         if (msg.content.startsWith("!chart")) {
-            let days = parseInt(msg.content.replace("!chart","").trim());
+            let days = parseInt(msg.content.replace("!chart", "").trim());
             if (isNaN(days)) {
                 days = 7
             }
@@ -437,12 +456,8 @@ client.on('message', msg => {
                         }
                     }
                 })
-
-
             }
         }
-
-
     }
 
     if (msg.content.startsWith('!faq') && config.mod_settings.enabled === true) {
