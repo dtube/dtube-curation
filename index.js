@@ -4,6 +4,8 @@ const steem = require("steem");
 const fetch = require("node-fetch");
 const ChartjsNode = require('chartjs-node');
 const chartNode = new ChartjsNode(720, 720 * .5);
+const Sentry = require('@sentry/node');
+Sentry.init({ dsn: 'https://4f28bfc09ac54a2ea8dfaa70413ebc3e@sentry.io/1419531' });
 
 const config = require('./config');
 const helper = require('./helper');
@@ -495,9 +497,12 @@ client.on('messageReactionRemove', (reaction, user) => {
 client.login(config.discord.token);
 
 process.on('uncaughtException', function (error) {
-    console.log(error)
+    Sentry.captureException(error);
+    process.exit(1)
 });
 
 process.on('unhandledRejection', function (error, p) {
-    console.log(error, p)
+    console.log(p);
+    Sentry.captureException(error);
+    process.exit(1)
 });

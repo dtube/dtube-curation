@@ -9,6 +9,7 @@
   "author": "wehmoen",
   "license": "MIT",
   "dependencies": {
+    "@sentry/node": "^4.6.4",
     "chart.js": "^2.7.3",
     "chartjs-node": "^1.7.1",
     "discord.js": "^11.3.2",
