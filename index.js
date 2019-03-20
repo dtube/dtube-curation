@@ -5,7 +5,7 @@ const fetch = require("node-fetch");
 const ChartjsNode = require('chartjs-node');
 const chartNode = new ChartjsNode(720, 720 * .5);
 const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://4f28bfc09ac54a2ea8dfaa70413ebc3e@sentry.io/1419531' });
+Sentry.init({dsn: 'https://4f28bfc09ac54a2ea8dfaa70413ebc3e@sentry.io/1419531'});
 
 const config = require('./config');
 const helper = require('./helper');
@@ -193,6 +193,20 @@ client.on('message', msg => {
             user = "dtube"
         }
 
+        let active = client
+            .guilds
+            .get(config.discord.curation.guild)
+            .channels
+            .get(config.discord.curation.channel)
+            .members.array();
+        let ids = active.map(x => x.user.id);
+        let online = [];
+        for (let i = 0;i<ids.length;i++) {
+            if(client.guilds.get(config.discord.curation.guild).presences.get(ids[i]) !== undefined && client.guilds.get('347020217966395393').presences.get(ids[i]).status !== 'offline') {
+                online.push(ids[i]);
+            }
+        }
+
         steem.api.getAccounts([user], (err, res) => {
             if (err || res.length === 0) {
                 msg.reply(user + " seems not to be a valid Steem account");
@@ -216,6 +230,7 @@ client.on('message', msg => {
                                         if (user === "dtube") {
                                             status.addField("Total Curated Videos:", count[0].count, true);
                                             status.addField("Total Number of Curators:", countCurators(), true);
+                                            status.addField("Online Curators:", online.length, true);
                                         }
 
                                         status.addField("Current 100% Vote Value:", vote_value + "$", true);
@@ -258,7 +273,7 @@ client.on('message', msg => {
             video.addField("🦄", "Adds 25% to the upvote", true);
             video.addField("💯", "Grants a 100% if at least three curators react with it.", false);
 
-            video.setDescription("Post any DTube link into the <#"+config.discord.curation.channel+"> channel. You can not curate videos older than 2 hours. Do not upvote videos talking about EOS. Do not upvote religious / violent / hate speech / etc content. Do not upvote promotional videos. To curate add the emotes shown above. You may add more than one emote. For questions ask Steeminator3000");
+            video.setDescription("Post any DTube link into the <#" + config.discord.curation.channel + "> channel. You can not curate videos older than 2 hours. Do not upvote videos talking about EOS. Do not upvote religious / violent / hate speech / etc content. Do not upvote promotional videos. To curate add the emotes shown above. You may add more than one emote. For questions ask Steeminator3000");
 
             msg.channel.send(video);
 
