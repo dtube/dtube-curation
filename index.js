@@ -55,17 +55,16 @@ function createChartOptions(DB_RESULT) {
     return {
         type: 'line',
         data: {
+
             labels: DB_RESULT.map(x => (new Date(x.posted)).toLocaleDateString("en-US")),
             datasets: [{
                 label: 'Daily Curated Videos',
                 data: DB_RESULT.map(x => x.count),
-                borderColor: [
-                    '#ff0000'
-                ],
+                borderColor: "#ff0000",
                 backgroundColor: [
-                    '#ff0000'
+                    'rgba(245,245,245,0.4)'
                 ],
-                borderWidth: 1
+                borderWidth: 3
             }]
         },
         options: {
@@ -80,6 +79,9 @@ function createChartOptions(DB_RESULT) {
                         fontColor: "#FFF",
                     }
                 }], xAxes: [{
+                    backgroundColor: [
+                        'rgba(245,245,245,0.4)'
+                    ],
                     ticks: {
                         fontColor: "#FFF"
                     }
