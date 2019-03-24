@@ -63,7 +63,7 @@ function createChartOptions(DB_RESULT) {
                     '#ff0000'
                 ],
                 backgroundColor: [
-                    'rgba(245,245,245,0.4)'
+                    '#ff0000'
                 ],
                 borderWidth: 1
             }]
