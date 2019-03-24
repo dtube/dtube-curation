@@ -60,7 +60,7 @@ function createChartOptions(DB_RESULT) {
                 label: 'Daily Curated Videos',
                 data: DB_RESULT.map(x => x.count),
                 borderColor: [
-                    'rgba(255,255,255,1)'
+                    '#ff0000'
                 ],
                 backgroundColor: [
                     'rgba(245,245,245,0.4)'
