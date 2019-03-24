@@ -27,7 +27,7 @@ database.addMessage = async (id, author, permlink) => {
 
 database.getMessageSummary = async(days) => {
     return new Promise((resolve, reject) => {
-        let sql = "select Count(id) as count, posted from message m WHERE m.posted > NOW() - INTERVAL ? DAY GROUP BY Day(m.posted);";
+        let sql = "select Count(id) as count, posted from message m WHERE m.posted > CURDATE() - INTERVAL ? DAY GROUP BY Day(m.posted);";
         database.query(sql,[days], (err, result) => {
             if (err) {
                 console.log(err);
