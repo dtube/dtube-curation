@@ -250,36 +250,38 @@ client.on('message', msg => {
 
                                         if (blacklist.noVote===true) {
                                             return  msg.channel.send(user + " is on the \"No Vote\" list!")
-                                        }
-
-                                        let status = new Discord.RichEmbed();
-                                        status.setFooter("Powered by d.tube Curation 🦄");
-                                        if (user === "dtube") {
-                                            status.setTitle("DTube Curation Bot - Status Overview");
                                         } else {
-                                            status.setTitle("@" + user + " - Status Overview");
+
+                                            let status = new Discord.RichEmbed();
+                                            status.setFooter("Powered by d.tube Curation 🦄");
+                                            if (user === "dtube") {
+                                                status.setTitle("DTube Curation Bot - Status Overview");
+                                            } else {
+                                                status.setTitle("@" + user + " - Status Overview");
+                                            }
+
+                                            status.setThumbnail('https://login.oracle-d.com/' + user + ".jpg");
+                                            status.setColor(0x0878e0);
+                                            if (user === "dtube") {
+                                                status.addField("Total Curated Videos:", count[0].count, true);
+                                                status.addField("Total Number of Curators:", countCurators(), true);
+                                                status.addField("Online Curators:", online.length, true);
+                                            }
+
+                                            status.addField("Current 100% Vote Value:", vote_value + "$", true);
+                                            status.addField("Current Steem Power:", sp.toFixed(3) + "SP", true);
+                                            status.addField("Current Voting Power:", vp.toFixed(2) + "%", true);
+
+                                            if (blacklist.count > 0 && !team.includes(user)) {
+                                                status.addField("Blacklisted:", blacklist.text);
+                                            }
+
+                                            if (team.includes(user)) {
+                                                status.addField("DTube Team Member:", "Yes 🤟");
+                                            }
+                                            msg.channel.send(status)
                                         }
 
-                                        status.setThumbnail('https://login.oracle-d.com/' + user + ".jpg");
-                                        status.setColor(0x0878e0);
-                                        if (user === "dtube") {
-                                            status.addField("Total Curated Videos:", count[0].count, true);
-                                            status.addField("Total Number of Curators:", countCurators(), true);
-                                            status.addField("Online Curators:", online.length, true);
-                                        }
-
-                                        status.addField("Current 100% Vote Value:", vote_value + "$", true);
-                                        status.addField("Current Steem Power:", sp.toFixed(3) + "SP", true);
-                                        status.addField("Current Voting Power:", vp.toFixed(2) + "%", true);
-
-                                        if (blacklist.count > 0 && !team.includes(user)) {
-                                            status.addField("Blacklisted:", blacklist.text);
-                                        }
-
-                                        if (team.includes(user)) {
-                                            status.addField("DTube Team Member:", "Yes 🤟");
-                                        }
-                                        msg.channel.send(status)
                                     });
 
                                 })
