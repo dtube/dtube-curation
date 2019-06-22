@@ -136,6 +136,7 @@ async function getVoteValue(vw, user) {
     })
 }
 
+
 function getvotingpower(account_name) {
     return new Promise(resolve => {
         steem.api.getAccounts([account_name], function (err, account) {
@@ -164,11 +165,13 @@ function getvotingpower(account_name) {
 }
 
 async function getBlacklistEntries(user) {
+    let blacklist = require("fs").readFileSync(__dirname + "/blacklist").toString().split("\n");
     let entries = await (await fetch("http://blacklist.usesteem.com/user/" + user)).json();
     return {
         entries: entries.blacklisted,
         text: entries.blacklisted.join(", "),
-        count: entries.blacklisted.length
+        count: entries.blacklisted.length,
+        noVote: blacklist.includes(user)
     }
 }
 
@@ -244,6 +247,11 @@ client.on('message', msg => {
                             getvotingpower(user).then(vp => {
                                 getVoteValue(vp, user).then(vote_value => {
                                     getBlacklistEntries(user).then(blacklist => {
+
+                                        if (blacklist.noVote===true) {
+                                            return  msg.channel.send(user + " is on the \"No Vote\" list!")
+                                        }
+
                                         let status = new Discord.RichEmbed();
                                         status.setFooter("Powered by d.tube Curation 🦄");
                                         if (user === "dtube") {
