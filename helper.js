@@ -1,5 +1,6 @@
 const config = require('./config');
 const steem = require('steem');
+const javalon = require('javalon');
 
 let database = require('mysql').createConnection(config.database);
 
@@ -164,6 +165,7 @@ database.addFeedback = async (from, msg, author, permlink) => {
 };
 
 function calculateVote(post) {
+    console.log(post)
     if (post.one_hundred >= 3)
         return 10000;
 
@@ -185,9 +187,8 @@ function calculateVote(post) {
     if (weight > 0 && post.down > 0)
         return 0;
 
-    if (weight > 10000) {
+    if (weight > 10000)
         weight = 10000;
-    }
 
     return weight
 }
@@ -233,24 +234,54 @@ module.exports = {
                         reject('Weight=0')
                     } else {
                         console.log('voting', message.author + '/' + message.permlink, weight);
-                        steem.broadcast.vote(
-                            config.steem.wif,
-                            config.steem.account, // Voter
-                            message.author, // Author
-                            message.permlink, // Permlink
-                            weight,
-                            (err, result_bc) => {
-                                if (err) {
-                                    reject(err);
-                                } else {
-                                    let sql = "UPDATE message SET voted = 1, vote_weight = ? WHERE author = ? and permlink = ?";
-                                    database.query(sql, [weight, message.author, message.permlink], (err, result) => {
-                                        console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink);
-                                        resolve(result_bc);
-                                    })
+
+                        // voting on avalon
+                        var newTx = {
+                            type: javalon.TransactionType.VOTE,
+                            data: {
+                                author: message.author,
+                                link: message.permlink,
+                                vt: weight*config.avalon.vtMultiplier,
+                                tag: ''
+                            }
+                        }
+                        
+                        newTx = javalon.sign(config.avalon.wif, config.avalon.account, newTx)
+
+                        javalon.sendRawTransaction(newTx, function(err, res) {
+                            if (!err) {
+                                let sql = "UPDATE message SET voted = 1, vote_weight = ? WHERE author = ? and permlink = ?";
+                                database.query(sql, [weight, message.author, message.permlink], (err, result) => {
+                                    console.log("Voted with " + (weight / 100) + "% for @" + message.author + '/' + message.permlink);
+                                    resolve({});
+                                })
+                            }
+                        })
+
+                        javalon.getContent(message.author, message.permlink, function(err, res) {
+                            if (res.json && res.json.refs) {
+                                for (let i = 0; i < res.json.refs.length; i++) {
+                                    var ref = res.json.refs[i].split('/')
+                                    if (ref[0] == 'steem') {
+                                        // voting on steem !
+                                        steem.broadcast.vote(
+                                            config.steem.wif,
+                                            config.steem.account, // Voter
+                                            ref[1], // Author
+                                            ref[2], // Permlink
+                                            weight,
+                                            (err, result_bc) => {
+                                                if (err) {
+                                                    reject(err);
+                                                }
+                                            }
+                                        );
+                                        // making sure its only spending one vote :)
+                                        break;
+                                    }
                                 }
                             }
-                        );
+                        })
                     }
 
 

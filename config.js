@@ -1,11 +1,12 @@
-var token = process.env.token || 'MY_SUPER_SECRET_BOT_TOKEN'
+var token = process.env.token || ''
 var wif = process.env.wif || '5JRaypasxMx1L97ZUX7YuC5Psb5EAbF821kkAGtBj7xCJFQcbLg'
+var wifAvalon = process.env.wif_avalon || ''
 var account = process.env.account || 'guest123'
 var db_addr = process.env.db_addr || 'localhost'
 var db_user = process.env.db_user || 'root'
 var db_pass = process.env.db_pass || ''
 var db_database = process.env.db_database || 'dtube'
-var channel = process.env.channel || '459820794273333263'
+var channel = process.env.channel || ''
 var guild = process.env.guild || '347020217966395393'
 
 
@@ -38,6 +39,11 @@ let config = {
     steem: {
         wif: wif,
         account: account
+    },
+    avalon: {
+        account: account,
+        wif: wifAvalon,
+        vtMultiplier: 10
     },
     database: {
         host: db_addr,

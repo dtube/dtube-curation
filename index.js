@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const steem = require("steem");
+const javalon = require('javalon');
 const fetch = require("node-fetch");
 const ChartjsNode = require('chartjs-node');
 const chartNode = new ChartjsNode(720, 720 * .5);
@@ -175,6 +176,81 @@ async function getBlacklistEntries(user) {
     }
 }
 
+function handleLink(msg) {
+    const link = helper.DTubeLink(msg.content);
+    let video = new Discord.RichEmbed();
+    video.setFooter("Powered by d.tube Curation 🦄")
+        .setTimestamp();
+    let authorInformation = link.replace('/#!', '').replace('https://d.tube/v/', '').split('/');
+    javalon.getContent(authorInformation[0], authorInformation[1], async (err, result) => {
+        if (err) {
+            msg.reply("Oups! An error occured. See the logs for more details");
+            console.log(err);
+        } else {
+            try {
+                let json = result.json
+                let posted_ago = Math.round(helper.getMinutesSincePost(new Date(result.ts)));
+                if (posted_ago > 2880) {
+                    msg.channel.send("This post is too old for curation through d.tube");
+                } else {
+                    var topTags = []
+                    for (const key in result.tags)
+                        topTags.push(key)
+                    video.setTitle(json.title.substr(0, 1024))
+                        .setAuthor("@" + result.author, null, "https://d.tube/#!/c/" + result.link)
+                        .setThumbnail(json.thumbnailUrl)
+                        .setDescription("[Watch Video](" + link + ")")
+                        .addField("Tags", topTags.join(', '), true)
+                        .addField("Uploaded with "+json.providerName, posted_ago + ' minutes ago', true)
+                        .setColor("DARK_NAVY");
+                    let exist = await helper.database.existMessage(result.author, result.link);
+                    if (!exist) {
+                        msg.channel.send({embed: video}).then(async (embed) => {
+                            embed.react(config.discord.curation.other_emojis.clock).then(clockReaction => {
+                                setTimeout(() => {
+                                    clockReaction.remove();
+                                    helper.database.getMessage(result.author, result.link).then(message => {
+                                        helper.vote(message, client).then(async (tx) => {
+                                            let msg = await helper.database.getMessage(result.author, result.link);
+                                            embed.react(config.discord.curation.other_emojis.check);
+                                            video.addField("Vote Weight", (msg.vote_weight / 100) + "%", true);
+                                            embed.edit({embed: video})
+                                        }).catch(error => {
+                                            let errmsg = "An error occured while voting. Please check the logs!";
+                                            try {
+                                                errmsg = error.cause.data.stack[0].format.split(":")[1]
+                                            } catch (e) {
+
+                                            }
+                                            video.addField("ERROR", errmsg);
+                                            embed.edit({embed: video});
+                                            console.error('Vote failed',);
+                                            embed.react(config.discord.curation.other_emojis.cross);
+                                        })
+                                    })
+                                }, 60 * 1000 * config.discord.curation.timeout_minutes)
+                            });
+                            helper.database.addMessage(embed.id, result.author, result.link)
+                        }).catch(error => {
+                            console.log(error)
+                        });
+                    } else {
+                        msg.reply("This video has already been posted to the curation channel.").then(reply => {
+                            setTimeout(() => {
+                                reply.delete();
+                            }, 5000)
+                        })
+                    }
+                }
+
+            } catch (err) {
+                msg.reply("Oups! An error occured. See the logs for more detauls");
+                console.log(err);
+            }
+        }
+    })
+}
+
 client.on('message', msg => {
     if (msg.author.bot) {
         return;
@@ -208,13 +284,13 @@ client.on('message', msg => {
 
     if (msg.content.startsWith("!status")) {
 
-        // TODO: complete list of team members
         const team = [
             "heimindanger",
             "nannal",
             "steeminator3000",
             "wehmoen",
-            "goyard"
+            "hetmasteen",
+            "macron"
         ];
 
         let user = msg.content.replace("!status", "").trim();
@@ -412,76 +488,7 @@ client.on('message', msg => {
 
         } else {
             if (helper.DTubeLink(msg.content)) {
-                const link = helper.DTubeLink(msg.content);
-                let video = new Discord.RichEmbed();
-                video.setFooter("Powered by d.tube Curation 🦄")
-                    .setTimestamp();
-                let authorInformation = link.replace('/#!', '').replace('https://d.tube/v/', '').split('/');
-                steem.api.getContent(authorInformation[0], authorInformation[1], async (err, result) => {
-                    if (err) {
-                        msg.reply("Oups! An error occured. See the logs for more details");
-                        console.log(err);
-                    } else {
-                        try {
-                            let json = JSON.parse(result.json_metadata);
-                            let posted_ago = Math.round(helper.getMinutesSincePost(new Date(result.created + 'Z')));
-                            if (posted_ago > 2880) {
-                                msg.channel.send("This post is too old for curation through d.tube");
-                            } else {
-                                json.tags.splice(4);
-                                video.setTitle(json.video.info.title.substr(0, 1024))
-                                    .setAuthor("@" + json.video.info.author, null, "https://d.tube/#!/c/" + json.video.info.author)
-                                    .setThumbnail('https://snap1.d.tube/ipfs/' + json.video.info.snaphash)
-                                    .setDescription("[Watch Video](" + link + ")")
-                                    .addField("Tags", json.tags.join(', '))
-                                    .addField("Uploaded", posted_ago + ' minutes ago', true)
-                                    .setColor("DARK_NAVY");
-                                let exist = await helper.database.existMessage(json.video.info.author, json.video.info.permlink);
-                                if (!exist) {
-                                    msg.channel.send({embed: video}).then(async (embed) => {
-                                        embed.react(config.discord.curation.other_emojis.clock).then(clockReaction => {
-                                            setTimeout(() => {
-                                                clockReaction.remove();
-                                                helper.database.getMessage(json.video.info.author, json.video.info.permlink).then(message => {
-                                                    helper.vote(message, client).then(async (tx) => {
-                                                        let msg = await helper.database.getMessage(json.video.info.author, json.video.info.permlink);
-                                                        embed.react(config.discord.curation.other_emojis.check);
-                                                        video.addField("Vote Weight", (msg.vote_weight / 100) + "%", true);
-                                                        embed.edit({embed: video})
-                                                    }).catch(error => {
-                                                        let errmsg = "An error occured while voting. Please check the logs!";
-                                                        try {
-                                                            errmsg = error.cause.data.stack[0].format.split(":")[1]
-                                                        } catch (e) {
-
-                                                        }
-                                                        video.addField("ERROR", errmsg);
-                                                        embed.edit({embed: video});
-                                                        console.error('Vote failed',);
-                                                        embed.react(config.discord.curation.other_emojis.cross);
-                                                    })
-                                                })
-                                            }, 60 * 1000 * config.discord.curation.timeout_minutes)
-                                        });
-                                        helper.database.addMessage(embed.id, json.video.info.author, json.video.info.permlink)
-                                    }).catch(error => {
-                                        console.log(error)
-                                    });
-                                } else {
-                                    msg.reply("This video has already been posted to the curation channel.").then(reply => {
-                                        setTimeout(() => {
-                                            reply.delete();
-                                        }, 5000)
-                                    })
-                                }
-                            }
-
-                        } catch (err) {
-                            msg.reply("Oups! An error occured. See the logs for more detauls");
-                            console.log(err);
-                        }
-                    }
-                })
+                handleLink(msg)
             }
         }
     }
