@@ -204,6 +204,16 @@ function countReaction(message) {
     return reactions;
 }
 
+function generatePermlink() {
+    let permlink = ""
+    let possible = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+    for (let i = 0; i < 8; i++) {
+        permlink += possible.charAt(Math.floor(Math.random() * possible.length))
+    }
+    return permlink
+}
+
 module.exports = {
     DTubeLink: (str) => {
         let words = str.split(' ');
@@ -216,6 +226,7 @@ module.exports = {
     },
     calculateVote,
     countReaction,
+    generatePermlink,
     getMinutesSincePost: (posted) => {
         let diff = (new Date()).getTime() - posted.getTime();
         return (diff / 60000);

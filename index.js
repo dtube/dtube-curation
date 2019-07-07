@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const steem = require("steem");
 const javalon = require('javalon');
+const asyncjs = require('async')
 const fetch = require("node-fetch");
 const ChartjsNode = require('chartjs-node');
 const chartNode = new ChartjsNode(720, 720 * .5);
@@ -423,42 +424,105 @@ client.on('message', msg => {
                                 .setColor("LUMINOUS_VIVID_PINK");
                             msg.channel.send(video);
                         } else {
-                            steem.api.getContent(authorInformation[0], authorInformation[1], async (err, result) => {
-                                let json = JSON.parse(result.json_metadata);
-                                let posted_ago = Math.round(helper.getMinutesSincePost(new Date(result.created + 'Z')));
-                                console.log(json.video);
-                                let video = new Discord.RichEmbed();
-                                video.setFooter("Powered by d.tube Curation 🦄")
+                            javalon.getContent(authorInformation[0],authorInformation[1],async (err,result) => {
+                                let posted_ago = Math.round(helper.getMinutesSincePost(new Date(result.ts)))
+                                let video = new Discord.RichEmbed()
+                                let topTags = []
+                                for (const key in result.tags)
+                                    topTags.push(key)
+                                if (topTags.length == 0)
+                                    topTags.push('No tags yet')
+                                video.setFooter("Powered by d.tube curation")
                                     .setTimestamp()
-                                    .setTitle("Feedback for: @" + json.video.info.author + '/' + json.video.info.permlink)
-                                    .setAuthor("@" + json.video.info.author, 'https://login.oracle-d.com/' + json.video.info.author + '.jpg', "https://d.tube/#!/c/" + json.video.info.author)
-                                    .setThumbnail('https://snap1.d.tube/ipfs/' + json.video.info.snaphash)
+                                    .setTitle("Feedback for: @" + result.author + '/' + result.link)
+                                    .setAuthor("@" + result.author, 'https://image.d.tube/u/' + result.author + '/avatar', "https://d.tube/#!/c/" + result.author)
+                                    .setThumbnail(result.json.thumbnailUrl)
                                     .setDescription("[Watch Video](" + link + ")")
-                                    .addField("Tags", json.tags.join(', '))
+                                    .addField("Tags", topTags.join(', '), true)
                                     .addField("Uploaded", posted_ago + ' minutes ago', true)
-                                    .setColor("DARK_GOLD");
-
+                                    .setColor("DARK_GOLD")
+                                
+                                let commentLink = helper.generatePermlink()
+                                let feedbackFooter = '\n![](https://cdn.discordapp.com/attachments/429110955914428426/520078555204288524/dtubeanimated2.gif)\nThis feedback was posted by ' + msg.author.username + ' through [OneLoveCuration Discord Bot](https://github.com/techcoderx/OneLoveCuration).'
                                 msg.channel.send(video).then(async (embed) => {
-                                    try {
-                                        const permlink = steem.formatter.commentPermlink(authorInformation[0], authorInformation[1]);
-                                        let id = await steem.broadcast.comment(config.steem.wif, authorInformation[0], authorInformation[1], config.steem.account, permlink, "", feedback, JSON.stringify({
-                                            app: "dtube/feedback"
-                                        }));
-                                        video.addField("Commented", "[View on Steemit](https://steemit.com/@" + config.steem.account + "/" + permlink + ")");
-
-                                        helper.database.addFeedback(msg.author.id, feedback, authorInformation[0], authorInformation[1]).then(() => {
-                                            embed.edit({embed: video})
-                                        }).catch(() => {
-                                            video.addField("Info", "Something went wrong while saving this feedback to the database. Please manually verify that the feedback was posted.");
-                                            embed.edit({embed: video})
-                                        })
-                                    } catch (e) {
-                                        video.addField("Info", "Something went wrong while broadcasting the feedback to the blockchain. Please manually verify that the feedback was posted. If not try again. If this still does not work: Don't panic. Contact <@356200653640695811>");
-                                        embed.edit({embed: video})
+                                    // Generate Avalon comment
+                                    let avalonCommentTx = {
+                                        type: 4,
+                                        data: {
+                                            link: commentLink,
+                                            pa: result.author,
+                                            pp: result.link,
+                                            json: {
+                                                app: 'dtube/feedback',
+                                                title: '',
+                                                description: feedback,
+                                                refs: []
+                                            },
+                                            vt: config.avalon.vpToSpendForFeedback,
+                                            tag: config.avalon.tag,
+                                        }
                                     }
 
-                                })
+                                    // Steem comment
+                                    let steempa, steempp
+                                    if (result.json.refs) for (let i = 0; i < result.json.refs.length; i++) {
+                                        let ref = result.json.refs[i].split('/')
+                                        if (ref[0] === 'steem') {
+                                            avalonCommentTx.data.json.refs = ['steem/' + ref[1] + commentLink]
+                                            steempa = ref[1]
+                                            steempp = ref[2]
+                                            break
+                                        }
+                                    }
 
+                                    // Comment broadcasts
+                                    let commentOps = {
+                                        avalon: (cb) => {
+                                            let signedTx = javalon.sign(config.avalon.wif,config.avalon.account,avalonCommentTx)
+                                            javalon.sendTransaction(signedTx,(err,aresult) => {
+                                                if (err) return cb(err)
+                                                cb(null,aresult)
+                                            })
+                                        }
+                                    }
+
+                                    if (steempa && steempp) {
+                                        commentOps.steem = (cb) => {
+                                            steem.broadcast.comment(config.steem.wif, steempa, steempp, config.steem.account, commentLink, "", feedback + feedbackFooter, JSON.stringify({
+                                                app: "dtube/feedback"
+                                            }),(err,sresult) => {
+                                                if (err) return cb(err)
+                                                cb(null,sresult)
+                                            })
+                                        }
+                                    }
+                                    
+                                    asyncjs.parallel(commentOps,(errors,results) => {
+                                        if (errors) console.log(errors)
+                                        if (errors && errors.steem && errors.avalon) {
+                                            video.addField("Info", "Something went wrong while broadcasting the feedback to the blockchains. Please manually verify that the feedback was posted. If not try again. If this still does not work: Don't panic. Contact <@356200653640695811>")
+                                            return embed.edit({embed: video})
+                                        }
+
+                                        // Commented successfully on at least one blockchain
+                                        if (errors && errors.avalon) {
+                                            video.addField("Commented","[View on DTube](https://d.tube/#!/v/" + config.steem.account + "/" + commentLink + ")")
+                                            video.addField("Info", "Something went wrong while broadcasting the feedback to Avalon blockchain. Please manually verify that the feedback was posted onto the blockchains.")
+                                        } else
+                                            video.addField("Commented","[View on DTube](https://d.tube/#!/v/" + config.avalon.account + "/" + commentLink + ")")
+                                        
+                                        if (errors && errors.steem) {
+                                            video.addField("Info", "Something went wrong while broadcasting the feedback to Steem blockchain. Please manually verify that the feedback was posted onto the blockchains.")
+                                        }
+
+                                        helper.database.addFeedback(msg.author.id,feedback,authorInformation[0],authorInformation[1]).then(() => {
+                                            embed.edit({embed: video})
+                                        }).catch(() => {
+                                            video.addField("Info", "Something went wrong while saving this feedback to the database. Please manually verify that the feedback was posted.")
+                                            embed.edit({embed: video})
+                                        })
+                                    })
+                                })
                             })
                         }
                     });
