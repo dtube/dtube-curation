@@ -443,7 +443,6 @@ client.on('message', msg => {
                                     .setColor("DARK_GOLD")
                                 
                                 let commentLink = helper.generatePermlink()
-                                let feedbackFooter = '\n![](https://cdn.discordapp.com/attachments/429110955914428426/520078555204288524/dtubeanimated2.gif)\nThis feedback was posted by ' + msg.author.username + ' through [OneLoveCuration Discord Bot](https://github.com/techcoderx/OneLoveCuration).'
                                 msg.channel.send(video).then(async (embed) => {
                                     // Generate Avalon comment
                                     let avalonCommentTx = {
@@ -488,7 +487,7 @@ client.on('message', msg => {
 
                                     if (steempa && steempp) {
                                         commentOps.steem = (cb) => {
-                                            steem.broadcast.comment(config.steem.wif, steempa, steempp, config.steem.account, commentLink, "", feedback + feedbackFooter, JSON.stringify({
+                                            steem.broadcast.comment(config.steem.wif, steempa, steempp, config.steem.account, commentLink, "", feedback, JSON.stringify({
                                                 app: "dtube/feedback"
                                             }),(err,sresult) => {
                                                 if (err) return cb(err)
