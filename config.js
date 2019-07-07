@@ -43,7 +43,9 @@ let config = {
     avalon: {
         account: account,
         wif: wifAvalon,
-        vtMultiplier: 10
+        vtMultiplier: 10,
+        vpToSpendForFeedback: 20,
+        tag: ''
     },
     database: {
         host: db_addr,
