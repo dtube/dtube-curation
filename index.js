@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const steem = require("steem");
+steem.api.setOptions({ url: 'https://api.steemit.com/', useAppbaseApi: true});
 const javalon = require('javalon');
 const asyncjs = require('async')
 const fetch = require("node-fetch");
@@ -291,7 +292,6 @@ client.on('message', msg => {
             "heimindanger",
             "nannal",
             "steeminator3000",
-            "wehmoen",
             "hetmasteen",
             "macron"
         ];

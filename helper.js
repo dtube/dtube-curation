@@ -1,6 +1,7 @@
 const config = require('./config');
 const javalon = require('javalon');
 const steem = require('steem');
+steem.api.setOptions({ url: 'https://api.steemit.com/', useAppbaseApi: true});
 const hive = require('steem');
 hive.api.setOptions({ url: 'https://api.openhive.network/', useAppbaseApi: true});
 
