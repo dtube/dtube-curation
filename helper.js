@@ -1,6 +1,8 @@
 const config = require('./config');
-const steem = require('steem');
 const javalon = require('javalon');
+const steem = require('steem');
+const hive = require('steem');
+hive.api.setOptions({ url: 'https://api.openhive.network/', useAppbaseApi: true});
 
 let database = require('mysql').createConnection(config.database);
 
@@ -276,6 +278,18 @@ module.exports = {
                                     if (ref[0] == 'steem') {
                                         // voting on steem !
                                         steem.broadcast.vote(
+                                            config.steem.wif,
+                                            config.steem.account, // Voter
+                                            ref[1], // Author
+                                            ref[2], // Permlink
+                                            weight,
+                                            (err, result_bc) => {
+                                                if (err) {
+                                                    reject(err);
+                                                }
+                                            }
+                                        );
+                                        hive.broadcast.vote(
                                             config.steem.wif,
                                             config.steem.account, // Voter
                                             ref[1], // Author
