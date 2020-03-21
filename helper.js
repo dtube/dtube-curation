@@ -1,8 +1,7 @@
 const config = require('./config');
 const javalon = require('javalon');
 const steem = new (require('./steemapi.js'))();
-const hive = new (require('./steemapi.js'))();
-hive.api.setOptions({ url: 'https://api.openhive.network/', useAppbaseApi: true});
+const hive = new (require('./hiveapi.js'))();
 
 let database = require('mysql').createConnection(config.database);
 
