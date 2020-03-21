@@ -9,8 +9,9 @@
   "author": "wehmoen",
   "license": "MIT",
   "dependencies": {
-    "async": "^2.6.2",
+    "@hiveio/hive-js": "0.0.1",
     "@sentry/node": "^4.6.4",
+    "async": "^2.6.2",
     "chart.js": "^2.7.3",
     "chartjs-node": "^1.7.1",
     "discord.js": "^11.3.2",
